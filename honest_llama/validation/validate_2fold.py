@@ -31,7 +31,7 @@ HF_NAMES = {
     'llama2_chat_13B': 'meta-llama/Llama-2-13b-chat-hf',
     'llama2_chat_70B': 'meta-llama/Llama-2-70b-chat-hf',
     'llama3_8B': 'meta-llama/Meta-Llama-3-8B',
-    'llama3_8B_instruct': '/data/TAP/wangyujing/Meta-Llama-3-8B-Instruct',
+    'llama3_8B_instruct': '/meta-llama/Meta-Llama-3-8B-Instruct',
     'llama3_70B': 'meta-llama/Meta-Llama-3-70B',
     'llama3_70B_instruct': 'meta-llama/Meta-Llama-3-70B-Instruct',
 
@@ -157,64 +157,8 @@ def main():
         top_heads, probes = get_top_heads(train_set_idxs, val_set_idxs, separated_head_wise_activations, separated_labels, num_layers, num_heads, args.seed, args.num_heads, args.use_random_dir)
 
         print("Heads intervened: ", sorted(top_heads))
+        np.save(",,/top_heads.npy",top_heads)
 
-    #     interveners = []
-    #     pv_config = []
-    #     top_heads_by_layer = {}
-    #     for layer, head, in top_heads:
-    #         if layer not in top_heads_by_layer:
-    #             top_heads_by_layer[layer] = []
-    #         top_heads_by_layer[layer].append(head)
-    #     for layer, heads in top_heads_by_layer.items():
-    #         direction = torch.zeros(head_dim * num_heads).to("cpu")
-    #         for head in heads:
-    #             dir = torch.tensor(com_directions[layer_head_to_flattened_idx(layer, head, num_heads)], dtype=torch.float32).to("cpu")
-    #             dir = dir / torch.norm(dir)
-    #             activations = torch.tensor(tuning_activations[:,layer,head,:], dtype=torch.float32).to("cpu") # batch x 128
-    #             proj_vals = activations @ dir.T
-    #             proj_val_std = torch.std(proj_vals)
-    #             direction[head * head_dim: (head + 1) * head_dim] = dir * proj_val_std
-    #         intervener = ITI_Intervener(direction, args.alpha) #head=-1 to collect all head activations, multiplier doens't matter
-    #         interveners.append(intervener)
-    #         pv_config.append({
-    #             "component": f"model.layers[{layer}].self_attn.o_proj.input",
-    #             "intervention": wrapper(intervener),
-    #         })
-    #     intervened_model = pv.IntervenableModel(pv_config, model)
-
-    #     filename = f'{args.model_prefix}{args.model_name}_seed_{args.seed}_top_{args.num_heads}_heads_alpha_{int(args.alpha)}_fold_{i}'
-
-    #     if args.use_center_of_mass:
-    #         filename += '_com'
-    #     if args.use_random_dir:
-    #         filename += '_random'
-                                
-    #     curr_fold_results = alt_tqa_evaluate(
-    #         models={args.model_name: intervened_model},
-    #         metric_names=['judge', 'info', 'mc'],
-    #         input_path=f'splits/fold_{i}_test_seed_{args.seed}.csv',
-    #         output_path=f'results_dump/answer_dump/{filename}.csv',
-    #         summary_path=f'results_dump/summary_dump/{filename}.csv',
-    #         device="cuda", 
-    #         interventions=None, 
-    #         intervention_fn=None, 
-    #         instruction_prompt=args.instruction_prompt,
-    #         judge_name=args.judge_name, 
-    #         info_name=args.info_name,
-    #         separate_kl_device='cuda',
-    #         orig_model=model
-    #     )
-
-    #     print(f"FOLD {i}")
-    #     print(curr_fold_results)
-
-    #     curr_fold_results = curr_fold_results.to_numpy()[0].astype(float)
-    #     results.append(curr_fold_results)
-    
-    # results = np.array(results)
-    # final = results.mean(axis=0)
-
-    # print(f'alpha: {args.alpha}, heads: {args.num_heads}, True*Info Score: {final[1]*final[0]}, True Score: {final[1]}, Info Score: {final[0]}, MC1 Score: {final[2]}, MC2 Score: {final[3]}, CE Loss: {final[4]}, KL wrt Original: {final[5]}')
 
 if __name__ == "__main__":
     main()
