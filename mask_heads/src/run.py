@@ -145,19 +145,14 @@ class Run:
             self.output_dir,f'./gts_{self.configs.data.name}_bleurt_score.npy'), gts)
         
         from sklearn.metrics import roc_auc_score, accuracy_score
-        # gts = np.load('/data/TAP/wangyujing/decore/outputs/2025-07-12/23-44-18/gts_TruthfulQA_bleurt_score.npy')
         gts = np.load(os.path.join(
             self.output_dir,f'./gts_{self.configs.data.name}_bleurt_score.npy'))
         scores_filepath = os.path.join(
             self.output_dir, f"score_{self.configs.data.name}.npy"
         )
         scores = np.load(scores_filepath)
-        # scores = np.load(f'/data/TAP/wangyujing/decore/outputs/2025-07-13/01-13-43/score_TruthfulQA.npy')
         gt_label = np.asarray(gts> 0.5, dtype=np.int32)
-        # print(scores)
-        # print(gts)
-        # print(gt_label)
-        # scores[scores < 0.55] = 0.0
+        
         all = 0
         false = 0
         for (score, gt) in zip(scores, gt_label):
@@ -166,10 +161,8 @@ class Run:
                 if gt==1:
                     false += 1
         print(f"false: {false}, all: {all}")
-        # scaled_scores = (scores - scores.min()) / (scores.max() - scores.min())
         score_res = np.asarray(scores> 0.5, dtype=np.int32)
         test_auroc = roc_auc_score(gt_label, scores)
-        # score_res = np.asarray(scores> 0.65, dtype=np.int32)
         test_acc = accuracy_score(gt_label, score_res)
         print(f"test auroc: {test_auroc}")
         print(f"test acc: {test_acc}")
@@ -206,71 +199,4 @@ class Run:
         save_path = "/data/TAP/wangyujing/decore/outputs/2025-07-13/01-13-43/cosine_similarity_distribution.png"
         plt.savefig(save_path, dpi=300, bbox_inches='tight')  # 300 dpi for high quality
         plt.close()
-            # print(step)
-            # if step==50:
-            #     break
-            # batch["predicted_answer"] = prediction["decoded_text"]
-            # if "alphas" in prediction:
-            #     # Handle for DeCoRe guided, to analyse the changes in alpha value throughout generation steps
-            #     batch["alphas"] = prediction["alphas"]
-
-            # if self.configs.data.name in ["TruthfulQA", "MemoTrap"]:
-            #     scores_true = []
-            #     scores_false = []
-            #     for temp_ans in batch["prompted_ref_true"]:
-            #         ans = temp_ans[0] if type(temp_ans) in [list, tuple] else temp_ans
-            #         log_probs = self.model.lm_score(batch, ans)
-            #         scores_true.append(log_probs)
-
-            #     for temp_ans in batch["prompted_ref_false"]:
-            #         ans = temp_ans[0] if type(temp_ans) in [list, tuple] else temp_ans
-            #         log_probs = self.model.lm_score(batch, ans)
-            #         scores_false.append(log_probs)
-
-            #     batch["scores_true"] = scores_true
-            #     batch["scores_false"] = scores_false
-
-            # if self.configs.data.name == "MemoTrap":
-            #     batch["answer_index"] = int(batch["answer_index"].cpu().numpy()[0])
-
-            # # Brute force normalisation for IFEval, some values were casted as tensors by collator
-            # if self.configs.data.name == "IFEval":
-            #     batch["kwargs"] = [
-            #         {
-            #             k: int(v.cpu().numpy()[0]) if type(v) == torch.Tensor else v
-            #             for k, v in kwargs_.items()
-            #         }
-            #         for kwargs_ in batch["kwargs"]
-            #     ]
-
-            # predictions.append(batch)
-
-            # values_to_normalised = ["idx"]
-            # if self.configs.data.name == "PopQA":
-            #     values_to_normalised += [
-            #         "s_pop",
-            #         "o_pop",
-            #     ]
-            # for key in values_to_normalised:
-            #     try:
-            #         batch[key] = int(batch[key].cpu().numpy()[0])
-            #     except:
-            #         batch[key] = str(batch[key][0])
-
-            # # Save the predictions to a JSONL file after each batch
-            # with open(prediction_filepath, "a") as f:
-            #     f.write(json.dumps(batch) + "\n")
-
-        # # Evaluate
-        # metrics = self.metrics(predictions)
-        # print(metrics)
-
-        # Log
-        # if not self.configs.debug:
-        #     wandb.log(metrics)
-
-        #     pred_artifact = wandb.Artifact(prediction_filename, type="prediction")
-        #     pred_artifact.add_file(prediction_filepath)
-        #     wandb.log_artifact(pred_artifact)
-        # else:
-        #     print(metrics)
+            
